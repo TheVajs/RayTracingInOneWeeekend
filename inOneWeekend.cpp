@@ -26,16 +26,21 @@ int main()
 	camera cam;
 	cam.aspect_ratio = 16.0 / 9.0;
 	cam.image_width = 400;
-	cam.samples_per_pixel = 50;
+	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
-	cam.fov = 90.0;
 
-	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+	cam.fov = 30;
+	cam.look_from = vec3(-2, 2, 1);
+	cam.look_at = vec3(0, 0, -1);
+	// cam.defocus_angle = 10;
+	// cam.focus_distance = 3.4;
+
+	// Time point.
+	auto begin = std::chrono::steady_clock::now();
 
 	cam.render(world);
 
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-	std::clog << "Time difference = "
-		<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-		<< " ms" << std::endl;
+	auto end = std::chrono::steady_clock::now();
+	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+	std::clog << "Duration = " << time << " ms" << std::endl;
 }

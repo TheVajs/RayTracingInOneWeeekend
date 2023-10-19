@@ -7,9 +7,9 @@
 
 using color = vec3;
 
-double linear_to_gamma(double x)
+double linear_to_gamma(double x, double gamma = 2.2)
 {
-	return pow(x, 1 / 2.2);
+	return pow(x, 1 / gamma);
 }
 
 vec3 linear_to_gamma(const vec3& pixel_color)
@@ -17,6 +17,13 @@ vec3 linear_to_gamma(const vec3& pixel_color)
 	return vec3(linear_to_gamma(pixel_color.x()),
 				linear_to_gamma(pixel_color.y()),
 				linear_to_gamma(pixel_color.z()));
+}
+
+vec3 linear_to_gamma(const vec3& pixel_color, double gamma)
+{
+	return vec3(linear_to_gamma(pixel_color.x(), gamma),
+				linear_to_gamma(pixel_color.y(), gamma),
+				linear_to_gamma(pixel_color.z(), gamma));
 }
 
 void write_color(std::ostream& out, color pixel_color)

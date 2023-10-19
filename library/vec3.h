@@ -138,14 +138,22 @@ inline vec3 normalize(vec3 v)
 
 inline vec3 random_in_unit_sphere()
 {
-	vec3 r;
 	while (true)
 	{
-		r = vec3::random(-1.0, 1.0);
+		vec3 r = vec3::random(-1.0, 1.0);
 		if (r.length_squared() < 1.0)
-			break;
+			return r;
 	}
-	return r;
+}
+
+inline vec3 random_in_unit_disk()
+{
+	while(true)
+	{
+		vec3 r = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+		if (r.length_squared() < 1.0)
+			return r;
+	}
 }
 
 inline vec3 random_unit_vector()
