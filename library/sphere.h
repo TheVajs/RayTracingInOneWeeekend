@@ -13,8 +13,8 @@ public:
 	bool hit(const ray& r, interval ray_t, hit_record& rec) const override
 	{
 		vec3 oc = r.origin() - center;
-		auto a = r.dir().length_squared();
-		auto half_b = dot(oc, r.dir());
+		auto a = r.direction().length_squared();
+		auto half_b = dot(oc, r.direction());
 		auto c = oc.length_squared() - radius * radius;
 
 		auto discriminant = half_b * half_b - a * c;

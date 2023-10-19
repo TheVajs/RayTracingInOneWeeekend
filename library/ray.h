@@ -10,7 +10,7 @@ public:
 	ray(const vec3& a, const vec3& b) : A(a), B(b) {}
 
 	vec3 origin() const { return A; }
-	vec3 dir() const { return B; }
+	vec3 direction() const { return B; }
 
 	vec3 at(double t) const
 	{

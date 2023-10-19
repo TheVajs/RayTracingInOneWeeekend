@@ -15,8 +15,8 @@ double linear_to_gamma(double x)
 vec3 linear_to_gamma(const vec3& pixel_color)
 {
 	return vec3(linear_to_gamma(pixel_color.x()),
-		linear_to_gamma(pixel_color.y()),
-		linear_to_gamma(pixel_color.z()));
+				linear_to_gamma(pixel_color.y()),
+				linear_to_gamma(pixel_color.z()));
 }
 
 void write_color(std::ostream& out, color pixel_color)

@@ -20,8 +20,8 @@ public:
 		// Two things are assumed. Outward normal is pointing out of the surface and
 		// the normal vector is unit length.
 
-		front_face = dot(r.dir(), outward_normal) < .0;
-		normal = front_face ? outward_normal : outward_normal;
+		front_face = dot(r.direction(), outward_normal) < .0;
+		normal = front_face ? outward_normal : -outward_normal;
 	}
 };
 
