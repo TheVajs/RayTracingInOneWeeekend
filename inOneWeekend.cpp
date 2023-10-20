@@ -9,10 +9,8 @@
 #include "library/material.h"
 #include "library/sphere.h"
 
-int main()
+void scene1(camera& cam, hittable_list& world)
 {
-	hittable_list world;
-
 	auto material_ground = make_shared<lambertian>(color(0.1, 0.15, 0.2));
 	auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
 	auto material_left = make_shared<dielectric>(3);
@@ -23,7 +21,6 @@ int main()
 	world.add(make_shared<sphere>(vec3(-1.0, 0.0, -1.0), 0.5, material_left));
 	world.add(make_shared<sphere>(vec3(1.0, 0.0, -1.0), 0.5, material_right));
 
-	camera cam;
 	cam.aspect_ratio = 16.0 / 9.0;
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
@@ -35,6 +32,14 @@ int main()
 	cam.look_at = vec3(0, 0, -1);
 	// cam.defocus_angle = 10;
 	// cam.focus_distance = 3.4;
+}
+
+int main()
+{
+	camera cam;
+	hittable_list world;
+
+	scene1(cam, world);
 
 	// Time point.
 	auto begin = std::chrono::steady_clock::now();

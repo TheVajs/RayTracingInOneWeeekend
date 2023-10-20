@@ -196,7 +196,6 @@ public:
 	}
 };
 
-int ray_per_sample = 20;
 vec3 center = vec3(0, 0, 2);
 vec3 loc00, pixel_delta_u, pixel_delta_v;
 
@@ -244,24 +243,9 @@ ray get_ray(int i, int j)
 	return ray(center, pixel_sample);
 }
 
-color pixel_color(const ray& r, const sphere& sphere)
+color backward_ray_marching(const ray& r, const hit_record& rec,
+	const sphere& sphere, const color& background_color)
 {
-	auto background = color(0.572, 0.772, 0.921);
-
-	hit_record rec;
-	if (!sphere.hit(r, rec))
-		return background;
-
-	// This is a simple demonstration of Beer's Law.
-
-	// auto p1 = r.at(rec.t0);
-	// auto p2 = r.at(rec.t1);
-	// float distance = (p2 - p1).length();
-	// float t = exp(-distance * sphere.sigma_a);
-	// return t * background + (1 - t) * sphere.scatter;
-
-	// Backward ray marching with uniform steps
-
 	float step_size = 0.1;
 	float sigma_a = 1.5;
 	float inside_length = (rec.t1 - rec.t0);
@@ -273,6 +257,8 @@ color pixel_color(const ray& r, const sphere& sphere)
 
 	float transparency = 1;
 	color result(0, 0, 0);
+
+	hit_record rec1;
 
 	for (int n = 0; n < ns; ++n)
 	{
@@ -287,7 +273,7 @@ color pixel_color(const ray& r, const sphere& sphere)
 
 		// In-scattering. Find the distance traveled by light though
 		// the volume to our sample point. Then apply Beer's law.
-		hit_record rec1;
+
 		if (sphere.hit(ray(sample_pos, light_dir), rec1))
 		{
 			float light_attenuation = exp(-rec1.t1 * sigma_a);
@@ -298,13 +284,81 @@ color pixel_color(const ray& r, const sphere& sphere)
 		result *= sample_transparency;
 	}
 
-	return background * transparency + result;
+	return background_color * transparency + result;
+}
+
+color forward_ray_marching(const ray& r, const hit_record& rec,
+	const sphere& sphere, const color& background_color)
+{
+	float step_size = 0.1;
+	float sigma_a = 1.5;
+	float inside_length = (rec.t1 - rec.t0);
+	int ns = std::ceil(inside_length / step_size);
+	step_size = inside_length / ns;
+
+	vec3 light_dir(0, 1, 0);
+	vec3 light_color(1.3, 0.3, 0.9);
+
+	float transparency = 1;
+	color result(0, 0, 0);
+
+	hit_record rec1;
+
+	for (int n = 0; n < ns; ++n)
+	{
+		float t = rec.t0 + step_size * (n + .5);
+
+		vec3 sample_pos = r.at(t);
+		sample_pos -= light_dir * .01;
+
+		// Compute sample transparency with Beer's law. 
+
+		float sample_attenuation = exp(-step_size * sigma_a);
+		transparency *= sample_attenuation;
+
+		// In-scattering. Find the distance traveled by light though
+		// the volume to our sample point. Then apply Beer's law.
+
+		if (sphere.hit(ray(sample_pos, light_dir), rec1))
+		{
+			float light_attenuation = exp(-rec1.t1 * sigma_a);
+			result += transparency * light_color * light_attenuation * step_size;
+		}
+	}
+
+	return background_color * transparency + result;
+}
+
+color pixel_color(const ray& r, const sphere& sphere)
+{
+	auto background_color = color(0.572, 0.772, 0.921);
+
+	hit_record rec;
+	if (!sphere.hit(r, rec))
+		return background_color;
+
+	// This is a simple demonstration of Beer's Law.
+
+	// auto p1 = r.at(rec.t0);
+	// auto p2 = r.at(rec.t1);
+	// float distance = (p2 - p1).length();
+	// float t = exp(-distance * sphere.sigma_a);
+	// return t * background_color + (1 - t) * vec3(0,0,0); //sphere.scatter;
+
+	// Backward ray marching with uniform steps
+
+	// return backward_ray_marching(r, rec, sphere, background_color);
+
+	// Forward ray marching with uniform steps
+
+	return forward_ray_marching(r, rec, sphere, background_color);
 }
 
 int main()
 {
 	sphere obj(vec3(0, 0, 0), color(0.8, 0.1, 0.5), 1.3, 1);
 
+	int rays_per_sample = 50;
 	initialize_camera();
 
 	std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -317,13 +371,13 @@ int main()
 		{
 			color result(0, 0, 0);
 
-			for (int n = 0; n < ray_per_sample; n++)
+			for (int n = 0; n < rays_per_sample; n++)
 			{
 				auto r = get_ray(i, j);
 				result += pixel_color(r, obj);
 			}
 
-			write_color(std::cout, result / ray_per_sample);
+			write_color(std::cout, result / rays_per_sample);
 		}
 	}
 
