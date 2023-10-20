@@ -13,7 +13,7 @@ int main()
 {
 	hittable_list world;
 
-	auto material_ground = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+	auto material_ground = make_shared<lambertian>(color(0.1, 0.15, 0.2));
 	auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
 	auto material_left = make_shared<dielectric>(3);
 	auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);
@@ -28,6 +28,7 @@ int main()
 	cam.image_width = 400;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 50;
+	cam.gamma = 2;
 
 	cam.fov = 30;
 	cam.look_from = vec3(-2, 2, 1);
