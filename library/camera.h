@@ -39,11 +39,15 @@ public:
 
 			for (int i = 0; i < image_width; i++)
 			{
+				// Stratified / Jittering the pixel randomnes.
 				color pixel_color(0, 0, 0);
-				for (int n = 0; n < samples_per_pixel; n++)
+				for (int j_s = 0; j_s < sqrt_spp; j_s++)
 				{
-					ray r = get_ray(i, j);
-					pixel_color += ray_color(r, max_depth, world);
+					for (int i_s = 0; i_s < sqrt_spp; i_s++)
+					{
+						ray r = get_ray(i, j, i_s, j_s);
+						pixel_color += ray_color(r, max_depth, world);
+					}
 				}
 
 				write_color(std::cout, linear_to_gamma(pixel_color / samples_per_pixel, gamma));
@@ -61,6 +65,8 @@ private:
 	vec3 center;
 	vec3 w, u, v;
 	vec3 defocus_disk_u, defocus_disk_v;
+	int sqrt_spp;
+	float recip_sqrt_spp;
 
 	void initialize()
 	{
@@ -96,12 +102,17 @@ private:
 		defocus_disk_v = focus_radius * v;
 
 		center = blur ? center : defocus_disk_sample();
+
+		// Jittering / Stratified
+
+		sqrt_spp = static_cast<int>(sqrt(samples_per_pixel));
+		recip_sqrt_spp = 1 / static_cast<float>(sqrt_spp);
 	}
 
-	ray get_ray(int i, int j) const
+	ray get_ray(int i, int j, int i_s, int j_s) const
 	{
 		auto pixel_center = pixel_start_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-		auto pixel_sample = pixel_center + pixel_sample_square();
+		auto pixel_sample = pixel_center + pixel_sample_square(i_s, j_s);
 
 		auto ray_direction = pixel_sample - center;
 		return ray(center, ray_direction);
@@ -113,10 +124,11 @@ private:
 		return center + d[0] * defocus_disk_u + d[1] * defocus_disk_v;
 	}
 
-	vec3 pixel_sample_square() const
+	vec3 pixel_sample_square(int i_s, int j_s) const
 	{
-		double dx = random_double() - .5;
-		double dy = random_double() - .5;
+		// [-.5, .5]
+		double dx = ((i_s + random_double()) * recip_sqrt_spp) - .5;
+		double dy = ((j_s + random_double()) * recip_sqrt_spp) - .5;
 		return (dx * pixel_delta_u) + (dy * pixel_delta_v);
 	}
 
@@ -129,10 +141,10 @@ private:
 
 		if (!world.hit(r, interval(0.001, infinity), rec))
 			return background;
-		
+
 		ray scattered;
 		color attenuation;
-        color color_from_emission = rec.mat->emitted(0, 0, vec3(0, 0, 0));
+		color color_from_emission = rec.mat->emitted(0, 0, vec3(0, 0, 0));
 
 		if (!rec.mat->scatter(r, rec, attenuation, scattered))
 			return color_from_emission;
