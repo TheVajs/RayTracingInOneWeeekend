@@ -10,6 +10,11 @@ class material
 public:
 	virtual ~material() = default;
 
+	virtual color emitted(double u, double v, const vec3& p) const
+	{
+		return color(0, 0, 0);
+	}
+
 	virtual bool scatter(
 		const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
 };
@@ -97,6 +102,27 @@ private:
 		r0 = r0 * r0;
 		return r0 + (1 - r0) * pow(1 - cosine, 5);
 	}
+};
+
+class diffuse_light : public material
+{
+public:
+	diffuse_light(const color& a) : emit(a) {}
+
+	// TODO add for texture
+
+	bool scatter(const ray& r_in, const hit_record& rec, color& atenuation, ray& scatter) const override
+	{
+		return false;
+	}
+
+	color emitted(double u, double v, const vec3& p) const override
+	{
+		return emit;
+	}
+
+private:
+	color emit;
 };
 
 #endif

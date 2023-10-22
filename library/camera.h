@@ -20,6 +20,7 @@ public:
 	double defocus_angle = 0;
 	double focus_distance = 0;
 	int max_depth = 10;
+	color background;
 
 	vec3 look_from = vec3(0, 0, -1.0);
 	vec3 look_at = vec3(0, 0, 0);
@@ -126,20 +127,19 @@ private:
 		if (depth <= 0)
 			return color(0, 0, 0);
 
-		if (world.hit(r, interval(0.001, infinity), rec))
-		{
-			ray scattered;
-			color attenuation;
+		if (!world.hit(r, interval(0.001, infinity), rec))
+			return background;
+		
+		ray scattered;
+		color attenuation;
+        color color_from_emission = rec.mat->emitted(0, 0, vec3(0, 0, 0));
 
-			if (rec.mat->scatter(r, rec, attenuation, scattered))
-				return attenuation * ray_color(scattered, depth - 1, world);
+		if (!rec.mat->scatter(r, rec, attenuation, scattered))
+			return color_from_emission;
 
-			return color(0, 0, 0);
-		}
+		color color_from_scatter = attenuation * ray_color(scattered, depth - 1, world);
 
-		auto dir = normalize(r.direction());
-		auto a = .5 * (dir.y() + 1.0);
-		return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(.5, .7, 1);
+		return color_from_scatter + color_from_emission;
 	}
 };
 
