@@ -15,8 +15,12 @@ public:
 		return color(0, 0, 0);
 	}
 
-	virtual bool scatter(
-		const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
+	virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
+
+	virtual double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const
+	{
+		return 0;
+	}
 };
 
 class lambertian : public material
@@ -35,6 +39,12 @@ public:
 		attenuation = albedo;
 
 		return true;
+	}
+
+	double scattering_pdf(const ray& r_in, const hit_record& rec, const ray& scattered) const
+	{
+		auto cos_theta = dot(rec.normal, normalize(scattered.direction()));
+		return cos_theta < 0 ? 0 : cos_theta / pi;
 	}
 
 private:
